@@ -3,8 +3,6 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
@@ -13,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: set up JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -24,9 +22,11 @@ jobs:
         with:
           flutter-version: '3.16.0'
 
-      # 하이픈 에러를 방지하기 위해 프로젝트 이름을 tutor_app으로 강제 지정합니다.
-      - name: Repair Project Structure
-        run: flutter create --overwrite --project-name tutor_app .
+      # 기존 코드를 보호하면서 안드로이드 틀만 만듭니다.
+      - name: Repair Android Structure
+        run: |
+          flutter create --overwrite --project-name tutor_app .
+          git checkout lib/main.dart # 깃허브가 덮어쓴 파일을 원래 코드로 복구합니다.
 
       - name: Install dependencies
         run: flutter pub get
