@@ -1,6 +1,7 @@
 name: tutor_app
-description: Tutor Management App
+description: 과외 선생님 전용 관리 앱
 version: 1.0.0+1
+
 environment:
   sdk: ">=3.0.0 <4.0.0"
 
