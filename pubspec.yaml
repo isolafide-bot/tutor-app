@@ -1,36 +1,16 @@
-name: tutor_manager_app
-description: 과외 선생님을 위한 깃허브 잔디 스타일 일정 관리 앱
+name: tutor_app
+description: Tutor Management App
 version: 1.0.0+1
-
 environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-
-  # 날짜 형식 및 다국어 지원 (상담일, 시간표 계산용)
   intl: ^0.18.1
-
-  # 전화, 문자, 웹사이트 연결 기능 (데일리 브리핑용)
-  url_launcher: ^6.1.11
-
-  # 로컬 데이터 저장 (폰 내부에 설정값 저장용)
   shared_preferences: ^2.2.0
-
-  # 아이콘 팩 (더 다양한 아이콘 사용 가능)
+  url_launcher: ^6.1.11
   cupertino_icons: ^1.0.5
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  
-  # 앱 디자인 규격 준수 체크
-  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
-
-  # 나중에 앱 아이콘이나 배경 이미지를 넣고 싶을 때 아래 주석을 풀고 사용하세요
-  # assets:
-  #   - assets/images/
