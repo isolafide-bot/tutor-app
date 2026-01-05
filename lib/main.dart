@@ -10,25 +10,23 @@ void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
     ));
 
-// --- [데이터 모델] ---
 class Student {
   String id, name, school, phone, memo;
   int completedSessions;
   DateTime? lastConsulted;
   List<String> consultationHistory;
   bool isPaid;
-  int colorValue;
 
   Student({
     required this.id, required this.name, this.school = '', this.phone = '', 
     this.memo = '', this.completedSessions = 0, this.lastConsulted,
-    this.consultationHistory = const [], this.isPaid = false, this.colorValue = 0xFF4CAF50,
+    this.consultationHistory = const [], this.isPaid = false,
   });
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'school': school, 'phone': phone, 'memo': memo,
     'completedSessions': completedSessions, 'lastConsulted': lastConsulted?.toIso8601String(),
-    'consultationHistory': consultationHistory, 'isPaid': isPaid, 'colorValue': colorValue,
+    'consultationHistory': consultationHistory, 'isPaid': isPaid,
   };
 
   factory Student.fromJson(Map<String, dynamic> json) => Student(
@@ -37,11 +35,10 @@ class Student {
     completedSessions: json['completedSessions'] ?? 0,
     lastConsulted: json['lastConsulted'] != null ? DateTime.parse(json['lastConsulted']) : null,
     consultationHistory: List<String>.from(json['consultationHistory'] ?? []),
-    isPaid: json['isPaid'] ?? false, colorValue: json['colorValue'] ?? 0xFF4CAF50,
+    isPaid: json['isPaid'] ?? false,
   );
 }
 
-// --- [메인 대시보드] ---
 class TutorMainApp extends StatefulWidget {
   @override
   _TutorMainAppState createState() => _TutorMainAppState();
@@ -77,7 +74,7 @@ class _TutorMainAppState extends State<TutorMainApp> {
   Widget build(BuildContext context) {
     final pages = [
       StudentDBScreen(students: students, onUpdate: _saveData),
-      WeeklyScheduleScreen(students: students),
+      Scaffold(appBar: AppBar(title: Text("주간 시간표")), body: Center(child: Text("준비 중"))),
       MonthlyGrassScreen(grassData: grassData, onUpdate: _saveData),
       BillingScreen(students: students, onUpdate: _saveData),
     ];
@@ -99,7 +96,6 @@ class _TutorMainAppState extends State<TutorMainApp> {
   }
 }
 
-// --- [화면 1: 학생 DB] ---
 class StudentDBScreen extends StatefulWidget {
   final List<Student> students;
   final Function onUpdate;
@@ -119,7 +115,6 @@ class _StudentDBScreenState extends State<StudentDBScreen> {
             itemBuilder: (context, index) {
               final s = widget.students[index];
               return Card(child: ListTile(
-                leading: CircleAvatar(backgroundColor: Color(s.colorValue)),
                 title: Text(s.name),
                 subtitle: Text("최종상담: ${s.lastConsulted != null ? DateFormat('MM/dd').format(s.lastConsulted!) : '기록없음'}"),
                 onTap: () => _showHistory(s),
@@ -163,14 +158,6 @@ class _StudentDBScreenState extends State<StudentDBScreen> {
   }
 }
 
-// --- [화면 2: 주간 시간표] ---
-class WeeklyScheduleScreen extends StatelessWidget {
-  final List<Student> students;
-  WeeklyScheduleScreen({required this.students});
-  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text("주간 시간표")), body: Center(child: Text("학생 목록 드래그 기능 준비 중")));
-}
-
-// --- [화면 3: 잔디 달력] ---
 class MonthlyGrassScreen extends StatefulWidget {
   final Map<String, String> grassData;
   final Function onUpdate;
@@ -203,7 +190,6 @@ class _MonthlyGrassScreenState extends State<MonthlyGrassScreen> {
   }
 }
 
-// --- [화면 4: 수업료 정산] ---
 class BillingScreen extends StatefulWidget {
   final List<Student> students;
   final Function onUpdate;
