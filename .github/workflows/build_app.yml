@@ -24,9 +24,9 @@ jobs:
         with:
           flutter-version: '3.16.0'
 
-      # [중요] 빠진 안드로이드/프로젝트 구조를 자동으로 생성합니다.
+      # 하이픈 에러를 방지하기 위해 프로젝트 이름을 tutor_app으로 강제 지정합니다.
       - name: Repair Project Structure
-        run: flutter create --overwrite .
+        run: flutter create --overwrite --project-name tutor_app .
 
       - name: Install dependencies
         run: flutter pub get
