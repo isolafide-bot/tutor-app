@@ -22,11 +22,14 @@ jobs:
         with:
           flutter-version: '3.16.0'
 
-      # 기존 코드를 보호하면서 안드로이드 틀만 만듭니다.
-      - name: Repair Android Structure
+      # [핵심] 깡통으로 변하는 것을 막기 위해 lib 폴더를 임시 보호합니다.
+      - name: Protect Source and Repair
         run: |
+          mkdir temp_lib
+          cp lib/main.dart temp_lib/main.dart
           flutter create --overwrite --project-name tutor_app .
-          git checkout lib/main.dart # 깃허브가 덮어쓴 파일을 원래 코드로 복구합니다.
+          cp temp_lib/main.dart lib/main.dart
+          rm -rf temp_lib
 
       - name: Install dependencies
         run: flutter pub get
