@@ -104,9 +104,7 @@ class StudentDBScreen extends StatefulWidget {
   final List<Student> students;
   final Function onUpdate;
   StudentDBScreen({required this.students, required this.onUpdate});
-
-  @override
-  _StudentDBScreenState createState() => _StudentDBScreenState();
+  @override _StudentDBScreenState createState() => _StudentDBScreenState();
 }
 
 class _StudentDBScreenState extends State<StudentDBScreen> {
@@ -130,7 +128,6 @@ class _StudentDBScreenState extends State<StudentDBScreen> {
       floatingActionButton: FloatingActionButton(child: Icon(Icons.add), onPressed: _addStudent),
     );
   }
-
   void _addStudent() {
     String name = '';
     showDialog(context: context, builder: (ctx) => AlertDialog(
@@ -145,7 +142,6 @@ class _StudentDBScreenState extends State<StudentDBScreen> {
       }, child: Text("추가"))],
     ));
   }
-
   void _showHistory(Student s) {
     TextEditingController controller = TextEditingController();
     showModalBottomSheet(context: context, isScrollControlled: true, builder: (ctx) => Padding(
@@ -167,12 +163,11 @@ class _StudentDBScreenState extends State<StudentDBScreen> {
   }
 }
 
-// --- [화면 2: 주간 시간표 (드래그)] ---
+// --- [화면 2: 주간 시간표] ---
 class WeeklyScheduleScreen extends StatelessWidget {
   final List<Student> students;
   WeeklyScheduleScreen({required this.students});
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text("주간 시간표")), body: Center(child: Text("학생 목록에서 드래그하여 배치하세요 (준비 중)")));
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text("주간 시간표")), body: Center(child: Text("학생 목록 드래그 기능 준비 중")));
 }
 
 // --- [화면 3: 잔디 달력] ---
@@ -180,10 +175,8 @@ class MonthlyGrassScreen extends StatefulWidget {
   final Map<String, String> grassData;
   final Function onUpdate;
   MonthlyGrassScreen({required this.grassData, required this.onUpdate});
-  @override
-  _MonthlyGrassScreenState createState() => _MonthlyGrassScreenState();
+  @override _MonthlyGrassScreenState createState() => _MonthlyGrassScreenState();
 }
-
 class _MonthlyGrassScreenState extends State<MonthlyGrassScreen> {
   @override
   Widget build(BuildContext context) {
@@ -198,18 +191,15 @@ class _MonthlyGrassScreenState extends State<MonthlyGrassScreen> {
           Color c = Colors.grey[200]!;
           if (widget.grassData[key] == '완료') c = Colors.green;
           return InkWell(
-            onTap: () => _toggleGrass(key),
+            onTap: () => setState(() {
+              widget.grassData[key] = widget.grassData[key] == '완료' ? '' : '완료';
+              widget.onUpdate();
+            }),
             child: Container(decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(4))),
           );
         },
       ),
     );
-  }
-  void _toggleGrass(String key) {
-    setState(() {
-      widget.grassData[key] = widget.grassData[key] == '완료' ? '' : '완료';
-    });
-    widget.onUpdate();
   }
 }
 
@@ -218,10 +208,8 @@ class BillingScreen extends StatefulWidget {
   final List<Student> students;
   final Function onUpdate;
   BillingScreen({required this.students, required this.onUpdate});
-  @override
-  _BillingScreenState createState() => _BillingScreenState();
+  @override _BillingScreenState createState() => _BillingScreenState();
 }
-
 class _BillingScreenState extends State<BillingScreen> {
   @override
   Widget build(BuildContext context) {
