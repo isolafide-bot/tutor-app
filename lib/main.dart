@@ -10,40 +10,38 @@ void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
     ));
 
-// --- [학생 데이터 모델] ---
+// --- [데이터 모델] ---
 class Student {
-  String id, name, school, grade, phone, memo;
-  int fee, completedSessions;
+  String id, name, school, phone, memo;
+  int completedSessions;
   DateTime? lastConsulted;
   List<String> consultationHistory;
   bool isPaid;
-  Color color;
+  int colorValue;
 
   Student({
-    required this.id, required this.name, this.school = '', this.grade = '',
-    this.phone = '', this.memo = '', this.fee = 0, this.completedSessions = 0,
-    this.lastConsulted, this.consultationHistory = const [],
-    this.isPaid = false, this.color = Colors.green,
+    required this.id, required this.name, this.school = '', this.phone = '', 
+    this.memo = '', this.completedSessions = 0, this.lastConsulted,
+    this.consultationHistory = const [], this.isPaid = false, this.colorValue = 0xFF4CAF50,
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id, 'name': name, 'school': school, 'grade': grade, 'phone': phone,
-    'memo': memo, 'fee': fee, 'completedSessions': completedSessions,
-    'lastConsulted': lastConsulted?.toIso8601String(),
-    'consultationHistory': consultationHistory, 'isPaid': isPaid, 'color': color.value,
+    'id': id, 'name': name, 'school': school, 'phone': phone, 'memo': memo,
+    'completedSessions': completedSessions, 'lastConsulted': lastConsulted?.toIso8601String(),
+    'consultationHistory': consultationHistory, 'isPaid': isPaid, 'colorValue': colorValue,
   };
 
   factory Student.fromJson(Map<String, dynamic> json) => Student(
-    id: json['id'], name: json['name'], school: json['school'] ?? '', grade: json['grade'] ?? '',
-    phone: json['phone'] ?? '', memo: json['memo'] ?? '', fee: json['fee'] ?? 0,
+    id: json['id'], name: json['name'], school: json['school'] ?? '',
+    phone: json['phone'] ?? '', memo: json['memo'] ?? '',
     completedSessions: json['completedSessions'] ?? 0,
     lastConsulted: json['lastConsulted'] != null ? DateTime.parse(json['lastConsulted']) : null,
     consultationHistory: List<String>.from(json['consultationHistory'] ?? []),
-    isPaid: json['isPaid'] ?? false, color: Color(json['color'] ?? 4284513600),
+    isPaid: json['isPaid'] ?? false, colorValue: json['colorValue'] ?? 0xFF4CAF50,
   );
 }
 
-// --- [메인 앱 대시보드] ---
+// --- [메인 대시보드] ---
 class TutorMainApp extends StatefulWidget {
   @override
   _TutorMainAppState createState() => _TutorMainAppState();
@@ -101,53 +99,150 @@ class _TutorMainAppState extends State<TutorMainApp> {
   }
 }
 
-// --- [상세 화면 코드들 (DB, 시간표, 잔디, 정산)] ---
-// 빌드를 위해 모든 클래스를 포함시켰습니다.
-
-class StudentDBScreen extends StatelessWidget {
+// --- [화면 1: 학생 DB] ---
+class StudentDBScreen extends StatefulWidget {
   final List<Student> students;
   final Function onUpdate;
   StudentDBScreen({required this.students, required this.onUpdate});
 
   @override
+  _StudentDBScreenState createState() => _StudentDBScreenState();
+}
+
+class _StudentDBScreenState extends State<StudentDBScreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("학생 Repository")),
-      body: students.isEmpty 
-        ? Center(child: Text("하단 + 버튼으로 학생을 등록하세요"))
+      body: widget.students.isEmpty 
+        ? Center(child: Text("하단 + 버튼으로 학생을 추가하세요"))
         : ListView.builder(
-            itemCount: students.length,
+            itemCount: widget.students.length,
             itemBuilder: (context, index) {
-              final s = students[index];
+              final s = widget.students[index];
               return Card(child: ListTile(
-                leading: CircleAvatar(backgroundColor: s.color),
-                title: Text("${s.name} (${s.school})"),
-                onTap: () => _showConsultation(context, s),
+                leading: CircleAvatar(backgroundColor: Color(s.colorValue)),
+                title: Text(s.name),
+                subtitle: Text("최종상담: ${s.lastConsulted != null ? DateFormat('MM/dd').format(s.lastConsulted!) : '기록없음'}"),
+                onTap: () => _showHistory(s),
               ));
             }),
-      floatingActionButton: FloatingActionButton(child: Icon(Icons.add), onPressed: () => _addStudent(context)),
+      floatingActionButton: FloatingActionButton(child: Icon(Icons.add), onPressed: _addStudent),
     );
   }
-  void _addStudent(context) { /* 추가 로직 */ }
-  void _showConsultation(context, s) { /* 상담 로직 */ }
+
+  void _addStudent() {
+    String name = '';
+    showDialog(context: context, builder: (ctx) => AlertDialog(
+      title: Text("신규 학생"),
+      content: TextField(onChanged: (v) => name = v, decoration: InputDecoration(hintText: "이름 입력")),
+      actions: [ElevatedButton(onPressed: () {
+        if (name.isNotEmpty) {
+          setState(() => widget.students.add(Student(id: DateTime.now().toString(), name: name)));
+          widget.onUpdate();
+          Navigator.pop(ctx);
+        }
+      }, child: Text("추가"))],
+    ));
+  }
+
+  void _showHistory(Student s) {
+    TextEditingController controller = TextEditingController();
+    showModalBottomSheet(context: context, isScrollControlled: true, builder: (ctx) => Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 16, right: 16, top: 16),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text("${s.name} 상담 기록", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        ...s.consultationHistory.map((h) => Text("• $h")).toList(),
+        TextField(controller: controller, decoration: InputDecoration(hintText: "상담 내용")),
+        ElevatedButton(onPressed: () {
+          setState(() {
+            s.consultationHistory.insert(0, "${DateFormat('MM/dd').format(DateTime.now())}: ${controller.text}");
+            s.lastConsulted = DateTime.now();
+          });
+          widget.onUpdate();
+          Navigator.pop(ctx);
+        }, child: Text("저장"))
+      ]),
+    ));
+  }
 }
 
+// --- [화면 2: 주간 시간표 (드래그)] ---
 class WeeklyScheduleScreen extends StatelessWidget {
   final List<Student> students;
   WeeklyScheduleScreen({required this.students});
-  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text("주간 시간표")), body: Center(child: Text("드래그 앤 드롭 준비됨")));
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text("주간 시간표")), body: Center(child: Text("학생 목록에서 드래그하여 배치하세요 (준비 중)")));
 }
 
-class MonthlyGrassScreen extends StatelessWidget {
+// --- [화면 3: 잔디 달력] ---
+class MonthlyGrassScreen extends StatefulWidget {
   final Map<String, String> grassData;
   final Function onUpdate;
   MonthlyGrassScreen({required this.grassData, required this.onUpdate});
-  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text("잔디 달력")), body: Center(child: Text("수업 완료 체크 가능")));
+  @override
+  _MonthlyGrassScreenState createState() => _MonthlyGrassScreenState();
 }
 
-class BillingScreen extends StatelessWidget {
+class _MonthlyGrassScreenState extends State<MonthlyGrassScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("잔디 달력")),
+      body: GridView.builder(
+        padding: EdgeInsets.all(16),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, mainAxisSpacing: 4, crossAxisSpacing: 4),
+        itemCount: 35,
+        itemBuilder: (context, index) {
+          String key = "2026-01-${(index + 1).toString().padLeft(2, '0')}";
+          Color c = Colors.grey[200]!;
+          if (widget.grassData[key] == '완료') c = Colors.green;
+          return InkWell(
+            onTap: () => _toggleGrass(key),
+            child: Container(decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(4))),
+          );
+        },
+      ),
+    );
+  }
+  void _toggleGrass(String key) {
+    setState(() {
+      widget.grassData[key] = widget.grassData[key] == '완료' ? '' : '완료';
+    });
+    widget.onUpdate();
+  }
+}
+
+// --- [화면 4: 수업료 정산] ---
+class BillingScreen extends StatefulWidget {
   final List<Student> students;
   final Function onUpdate;
   BillingScreen({required this.students, required this.onUpdate});
-  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text("수업료 정산")), body: Center(child: Text("미입금 음영 처리됨")));
+  @override
+  _BillingScreenState createState() => _BillingScreenState();
+}
+
+class _BillingScreenState extends State<BillingScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("수업료 정산")),
+      body: ListView.builder(
+        itemCount: widget.students.length,
+        itemBuilder: (context, index) {
+          final s = widget.students[index];
+          return Opacity(
+            opacity: s.isPaid ? 1.0 : 0.3,
+            child: Card(child: ListTile(
+              title: Text(s.name, style: TextStyle(fontWeight: FontWeight.bold)),
+              trailing: ElevatedButton(onPressed: () {
+                setState(() => s.isPaid = !s.isPaid);
+                widget.onUpdate();
+              }, child: Text(s.isPaid ? "정산취소" : "입금확인")),
+            )),
+          );
+        },
+      ),
+    );
+  }
 }
